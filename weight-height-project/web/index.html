@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Height & Weight Toolkit</title>
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--tx:#1c2220;--mu:#68716c;--ac:#0f766e;--ac2:#c2410c;--bd:#e1dfd7;--ok:#15803d;--wa:#b45309;--bad:#b91c1c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141918;--card:#1d2422;--tx:#e8ece9;--mu:#9aa6a0;--ac:#2dd4bf;--ac2:#fb923c;--bd:#2d3835;--ok:#4ade80;--wa:#fbbf24;--bad:#f87171}}
+:root[data-theme="dark"]{--bg:#141918;--card:#1d2422;--tx:#e8ece9;--mu:#9aa6a0;--ac:#2dd4bf;--ac2:#fb923c;--bd:#2d3835;--ok:#4ade80;--wa:#fbbf24;--bad:#f87171}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;overflow-x:hidden}
+main{max-width:1000px;margin:0 auto;padding:16px 14px 40px}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+h1{font-size:22px;margin:0}.sub{color:var(--mu);margin:2px 0 0;font-size:13px}
+.seg{display:inline-flex;border:1px solid var(--bd);border-radius:20px;overflow:hidden}
+.seg button{border:0;background:var(--card);color:var(--tx);padding:7px 14px;font:inherit;cursor:pointer}
+.seg button.on{background:var(--ac);color:#fff}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;min-width:0}
+.card h2{font-size:13px;margin:0 0 8px;color:var(--mu);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.big{font-size:28px;font-weight:700;line-height:1.1}.mu{color:var(--mu);font-size:13px}
+.row{display:flex;align-items:center;gap:10px;margin:6px 0}
+.row label{width:58px;color:var(--mu);font-size:13px}
+.row input[type=range]{flex:1;min-width:0;accent-color:var(--ac)}
+.row input[type=number]{width:78px;padding:6px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit}
+.bar{height:10px;border-radius:6px;background:linear-gradient(90deg,#60a5fa 0 14%,#4ade80 14% 40%,#fbbf24 40% 60%,#f87171 60%);position:relative;margin:12px 0 4px}
+.bar i{position:absolute;top:-4px;width:4px;height:18px;background:var(--tx);border-radius:2px;transform:translateX(-2px);transition:left .2s}
+.pb{display:flex;height:22px;border-radius:6px;overflow:hidden;margin:8px 0;font-size:12px;color:#fff}
+.pb div{display:flex;align-items:center;justify-content:center;min-width:0;transition:width .2s}
+canvas{width:100%;height:290px;display:block}
+.btn{border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:7px 12px;border-radius:10px;font:inherit;cursor:pointer}
+.btn:hover{border-color:var(--ac)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.chip{font-size:12px;border:1px solid var(--bd);border-radius:12px;padding:2px 9px;color:var(--mu)}
+.wide{grid-column:1/-1}
+</style></head><body><main>
+<header>
+ <div><h1>Height &amp; Weight Toolkit</h1><p class="sub" id="src"></p></div>
+ <div class="seg" id="useg"><button data-u="m" class="on">Metric</button><button data-u="i">Imperial</button></div>
+</header>
+
+<div class="card wide" style="margin-bottom:12px">
+ <h2>Your measurements</h2>
+ <div class="row"><label>Height</label><input type="range" id="hr"><input type="number" id="hn"><span class="mu" id="hu"></span></div>
+ <div class="row"><label>Weight</label><input type="range" id="wr"><input type="number" id="wn"><span class="mu" id="wu"></span></div>
+ <div class="chips"><button class="btn" id="rnd">🎲 Random person</button></div>
+</div>
+
+<div class="grid">
+ <div class="card"><h2>BMI</h2><div class="big" id="bmi"></div><div class="mu" id="bcat"></div>
+  <div class="bar"><i id="bm"></i></div><div class="mu" style="display:flex;justify-content:space-between"><span>15</span><span>18.5</span><span>25</span><span>30</span><span>40</span></div></div>
+ <div class="card"><h2>Healthy weight range</h2><div class="big" id="hw"></div><div class="mu">for your height (BMI 18.5–24.9)</div><div class="mu" id="hwd" style="margin-top:6px"></div></div>
+ <div class="card"><h2>Regression · height from weight</h2><div class="big" id="ph"></div><div class="mu" id="phd"></div></div>
+ <div class="card"><h2>Regression · weight from height</h2><div class="big" id="pw"></div><div class="mu" id="pwd"></div></div>
+ <div class="card wide"><h2>Classification · likely gender</h2><div class="big" id="gc"></div>
+  <div class="pb"><div id="pm" style="background:var(--ac)"></div><div id="pf" style="background:var(--ac2)"></div></div>
+  <div class="mu">Logistic regression on height + weight. Statistical guess from body measurements only — not a fact about any person.</div></div>
+ <div class="card wide"><h2>Where you sit in the data</h2><canvas id="cv"></canvas>
+  <div class="chips"><span class="chip" style="color:var(--ac)">● male</span><span class="chip" style="color:var(--ac2)">● female</span><span class="chip">— regression line</span><span class="chip">◆ you</span></div></div>
+ <div class="card wide"><h2>Model &amp; data</h2><div class="chips" id="met"></div>
+  <div class="chips"><button class="btn" id="up">📂 Train on my weight-height.csv</button><button class="btn" id="rs">↺ Demo data</button><span class="mu" id="msg"></span></div>
+  <input type="file" id="fi" accept=".csv,text/csv" hidden>
+  <p class="mu" style="margin:8px 0 0">CSV needs Gender, Height (inches), Weight (pounds) columns. The file is read in your browser and never uploaded.</p></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id),mean=a=>a.reduce((x,y)=>x+y,0)/a.length,sd=(a,m)=>Math.sqrt(mean(a.map(x=>(x-m)**2)));
+let U='m',H=170,W=70,D=[],M={},seed=42;
+const rnd=()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const gauss=()=>Math.sqrt(-2*Math.log(rnd()+1e-12))*Math.cos(6.2832*rnd());
+function demo(){seed=42;const r=.85,o=[];for(let i=0;i<2000;i++){const f=i%2,m=f?[63.7,2.7,135.9,19.2]:[69,2.86,187,19.8],zw=gauss(),zh=r*zw+Math.sqrt(1-r*r)*gauss();o.push({g:f,h:(m[0]+m[1]*zh)*2.54,w:(m[2]+m[3]*zw)/2.2046})}return o}
+function train(d,label){D=d;const idx=[...d.keys()];for(let i=idx.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]]}
+ const cut=Math.floor(d.length*.8),tr=idx.slice(0,cut).map(i=>d[i]),te=idx.slice(cut).map(i=>d[i]);
+ const mw=mean(tr.map(x=>x.w)),mh=mean(tr.map(x=>x.h));let sxy=0,sww=0,shh=0;tr.forEach(x=>{sxy+=(x.w-mw)*(x.h-mh);sww+=(x.w-mw)**2;shh+=(x.h-mh)**2});
+ const s1=sxy/sww,i1=mh-s1*mw,s2=sxy/shh,i2=mw-s2*mh;
+ const r2=(fx,gy)=>{const m=mean(te.map(gy));let a=0,b=0;te.forEach(x=>{a+=(gy(x)-fx(x))**2;b+=(gy(x)-m)**2});return[1-a/b,Math.sqrt(a/te.length)]};
+ const[R1,E1]=r2(x=>s1*x.w+i1,x=>x.h),[R2,E2]=r2(x=>s2*x.h+i2,x=>x.w);
+ const sH=sd(tr.map(x=>x.h),mh),sW=sd(tr.map(x=>x.w),mw),sub=tr.slice(0,4000);let b0=0,b1=0,b2=0;
+ for(let k=0;k<500;k++){let g0=0,g1=0,g2=0;sub.forEach(x=>{const a=(x.h-mh)/sH,c=(x.w-mw)/sW,e=1/(1+Math.exp(-(b0+b1*a+b2*c)))-x.g;g0+=e;g1+=e*a;g2+=e*c});const n=sub.length;b0-=g0/n;b1-=g1/n;b2-=g2/n}
+ M={s1,i1,s2,i2,R1,E1,R2,E2,b0,b1,b2,mh,mw,sH,sW,label,n:d.length};
+ const pf=(h,w)=>1/(1+Math.exp(-(b0+b1*(h-mh)/sH+b2*(w-mw)/sW)));M.pf=pf;
+ M.acc=te.filter(x=>(pf(x.h,x.w)>=.5?1:0)===x.g).length/te.length;
+ $('src').textContent=label+' · '+d.length.toLocaleString()+' rows';
+ $('met').innerHTML=[`Height R² ${R1.toFixed(2)}`,`Weight R² ${R2.toFixed(2)}`,`Gender accuracy ${(M.acc*100).toFixed(1)}%`,`Test size ${te.length}`].map(t=>`<span class="chip">${t}</span>`).join('');
+ render()}
+// units
+const cfg={m:{hmin:120,hmax:220,wmin:30,wmax:150,hu:'cm',wu:'kg'},i:{hmin:47,hmax:87,wmin:66,wmax:330,hu:'in',wu:'lb'}};
+const dh=c=>U=='m'?c:c/2.54,dw=k=>U=='m'?k:k*2.2046,fh=c=>dh(c).toFixed(1)+' '+cfg[U].hu,fw=k=>dw(k).toFixed(1)+' '+cfg[U].wu;
+function ui(){const c=cfg[U];[['hr','hn',c.hmin,c.hmax,dh(H)],['wr','wn',c.wmin,c.wmax,dw(W)]].forEach(([a,b,mi,ma,v])=>{$(a).min=$(b).min=mi;$(a).max=$(b).max=ma;$(a).step=$(b).step=1;$(a).value=$(b).value=Math.round(v)});$('hu').textContent=c.hu;$('wu').textContent=c.wu}
+function sync(id){const hh=id[0]=='h',v=+$(id).value;if(!isFinite(v))return;const o=hh?'hn':'wn',p=hh?'hr':'wr';$(o).value=v;$(p).value=v;
+ if(hh)H=U=='m'?v:v*2.54;else W=U=='m'?v:v/2.2046;render()}
+['hr','hn','wr','wn'].forEach(id=>$(id).addEventListener('input',()=>sync(id)));
+$('useg').onclick=e=>{const u=e.target.dataset.u;if(!u||u==U)return;U=u;[...$('useg').children].forEach(b=>b.classList.toggle('on',b.dataset.u==U));ui();render()};
+$('rnd').onclick=()=>{const p=D[Math.floor(Math.random()*D.length)];H=Math.min(220,Math.max(120,p.h));W=Math.min(150,Math.max(30,p.w));ui();render()};
+function render(){if(!M.n)return;
+ const bmi=W/(H/100)**2,cat=bmi<18.5?['Underweight','#60a5fa']:bmi<25?['Healthy','var(--ok)']:bmi<30?['Overweight','var(--wa)']:['Obese','var(--bad)'];
+ $('bmi').textContent=bmi.toFixed(1);$('bcat').textContent=cat[0];$('bcat').style.color=cat[1];$('bm').style.left=Math.min(100,Math.max(0,(bmi-15)/25*100))+'%';
+ const lo=18.5*(H/100)**2,hi=24.9*(H/100)**2;$('hw').textContent=dw(lo).toFixed(0)+'–'+dw(hi).toFixed(0)+' '+cfg[U].wu;
+ const d=W<lo?lo-W:W>hi?W-hi:0;$('hwd').textContent=d?(W<lo?'You are ':'You are ')+fw(d)+(W<lo?' below':' above')+' this range.':'You are within this range ✓';
+ const ph=M.s1*W+M.i1;$('ph').textContent=fh(ph);$('phd').textContent='Expected height at '+fw(W)+'. You are '+fh(Math.abs(H-ph))+(H>=ph?' taller':' shorter')+'.';
+ const pw=M.s2*H+M.i2;$('pw').textContent=fw(pw);$('pwd').textContent='Expected weight at '+fh(H)+'. You are '+fw(Math.abs(W-pw))+(W>=pw?' heavier':' lighter')+'.';
+ const p=M.pf(H,W);$('gc').textContent=p>=.5?'Female (1)':'Male (0)';$('pm').style.width=(1-p)*100+'%';$('pf').style.width=p*100+'%';
+ $('pm').textContent=(1-p)>.12?'Male '+((1-p)*100).toFixed(0)+'%':'';$('pf').textContent=p>.12?'Female '+(p*100).toFixed(0)+'%':'';draw()}
+function draw(){const cv=$('cv'),k=devicePixelRatio||1,Wd=cv.clientWidth,Ht=cv.clientHeight;cv.width=Wd*k;cv.height=Ht*k;const c=cv.getContext('2d');c.scale(k,k);
+ const css=getComputedStyle(document.documentElement),g=n=>css.getPropertyValue(n).trim(),L=34,B=26,x0=30,x1=150,y0=120,y1=220;
+ const X=w=>L+(w-x0)/(x1-x0)*(Wd-L-8),Y=h=>Ht-B-(h-y0)/(y1-y0)*(Ht-B-8);
+ c.font='11px system-ui';c.strokeStyle=g('--bd');c.fillStyle=g('--mu');
+ for(let w=40;w<=140;w+=20){c.beginPath();c.moveTo(X(w),8);c.lineTo(X(w),Ht-B);c.stroke();c.fillText(Math.round(dw(w)),X(w)-8,Ht-10)}
+ for(let h=130;h<=210;h+=20){c.beginPath();c.moveTo(L,Y(h));c.lineTo(Wd-8,Y(h));c.stroke();c.fillText(Math.round(dh(h)),2,Y(h)+4)}
+ c.globalAlpha=.4;D.slice(0,900).forEach(p=>{c.fillStyle=p.g?g('--ac2'):g('--ac');c.beginPath();c.arc(X(p.w),Y(p.h),2,0,7);c.fill()});c.globalAlpha=1;
+ c.strokeStyle=g('--tx');c.lineWidth=2;c.beginPath();c.moveTo(X(x0),Y(M.s1*x0+M.i1));c.lineTo(X(x1),Y(M.s1*x1+M.i1));c.stroke();
+ const x=X(W),y=Y(H);c.fillStyle=g('--tx');c.strokeStyle=g('--bg');c.lineWidth=2;c.beginPath();c.moveTo(x,y-9);c.lineTo(x+9,y);c.lineTo(x,y+9);c.lineTo(x-9,y);c.closePath();c.fill();c.stroke()}
+// CSV
+$('up').onclick=()=>$('fi').click();
+$('rs').onclick=()=>{train(demo(),'Demo data (synthetic)');$('msg').textContent=''};
+$('fi').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{
+ const ln=r.result.trim().split(/\r?\n/),hd=ln[0].split(',').map(s=>s.replace(/"/g,'').trim().toLowerCase()),gi=hd.indexOf('gender'),hi=hd.indexOf('height'),wi=hd.indexOf('weight');
+ if(gi<0||hi<0||wi<0)throw 0;const o=[];ln.slice(1).forEach(l=>{const a=l.split(',').map(s=>s.replace(/"/g,'').trim()),h=+a[hi]*2.54,w=+a[wi]/2.2046;if(isFinite(h)&&isFinite(w)&&a[gi])o.push({g:/^f/i.test(a[gi])?1:0,h,w})});
+ if(o.length<20)throw 0;train(o,f.name);$('msg').textContent='Trained on '+o.length+' rows ✓'}catch(_){$('msg').textContent='Could not read that file — check the column names.'}};r.readAsText(f);e.target.value=''};
+addEventListener('resize',render);matchMedia('(prefers-color-scheme:dark)').onchange=render;
+ui();train(demo(),'Demo data (synthetic)');
+</script></main></body></html>
